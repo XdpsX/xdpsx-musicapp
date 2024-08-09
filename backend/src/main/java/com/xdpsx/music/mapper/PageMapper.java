@@ -1,12 +1,8 @@
 package com.xdpsx.music.mapper;
 
 import com.xdpsx.music.dto.common.PageResponse;
-import com.xdpsx.music.dto.response.AlbumResponse;
-import com.xdpsx.music.dto.response.ArtistResponse;
-import com.xdpsx.music.dto.response.TrackResponse;
-import com.xdpsx.music.model.entity.Album;
-import com.xdpsx.music.model.entity.Artist;
-import com.xdpsx.music.model.entity.Track;
+import com.xdpsx.music.dto.response.*;
+import com.xdpsx.music.model.entity.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -21,6 +17,8 @@ public class PageMapper {
     private final ArtistMapper artistMapper;
     private final AlbumMapper albumMapper;
     private final TrackMapper trackMapper;
+    private final PlaylistMapper playlistMapper;
+    private final UserMapper userMapper;
 
     public PageResponse<ArtistResponse> toArtistPageResponse(Page<Artist> artistPage){
         return toPageResponse(artistPage, artistMapper::fromEntityToResponse);
@@ -30,6 +28,12 @@ public class PageMapper {
     }
     public PageResponse<TrackResponse> toTrackPageResponse(Page<Track> trackPage){
         return toPageResponse(trackPage, trackMapper::fromEntityToResponse);
+    }
+    public PageResponse<PlaylistResponse> toPlaylistPageResponse(Page<Playlist> playlistPage){
+        return toPageResponse(playlistPage, playlistMapper::fromEntityToResponse);
+    }
+    public PageResponse<UserResponse> toUserPageResponse(Page<User> userPage){
+        return toPageResponse(userPage, userMapper::fromEntityToResponse);
     }
 
     public <T, R> PageResponse<R> toPageResponse(Page<T> page, Function<T, R> mapper) {

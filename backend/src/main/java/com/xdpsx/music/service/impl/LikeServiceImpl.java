@@ -1,14 +1,13 @@
 package com.xdpsx.music.service.impl;
 
 import com.xdpsx.music.exception.BadRequestException;
-import com.xdpsx.music.exception.ResourceNotFoundException;
 import com.xdpsx.music.model.entity.Like;
 import com.xdpsx.music.model.entity.Track;
 import com.xdpsx.music.model.entity.User;
 import com.xdpsx.music.model.id.LikeId;
 import com.xdpsx.music.repository.LikeRepository;
-import com.xdpsx.music.repository.TrackRepository;
 import com.xdpsx.music.service.LikeService;
+import com.xdpsx.music.service.TrackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,14 +15,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class LikeServiceImpl implements LikeService {
     private final LikeRepository likeRepository;
-    private final TrackRepository trackRepository;
+    private final TrackService trackService;
 
     @Override
     public void likeTrack(Long trackId, User loggedUser) {
-        Track track = trackRepository.findById(trackId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("Not found track with ID=%s", trackId)
-                ));
+        Track track = trackService.getTrackById(trackId);
 
         LikeId likeId = new LikeId();
         likeId.setUserId(loggedUser.getId());
@@ -44,13 +40,11 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     public void unlikeTrack(Long trackId, User loggedUser) {
-        Track track = trackRepository.findById(trackId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("Not found track with ID=%s", trackId)
-                ));
+        Track track = trackService.getTrackById(trackId);
+
         LikeId likeId = new LikeId();
         likeId.setUserId(loggedUser.getId());
-        likeId.setTrackId(trackId);
+        likeId.setTrackId(track.getId());
 
         if (!likeRepository.existsById(likeId)) {
             throw new BadRequestException(

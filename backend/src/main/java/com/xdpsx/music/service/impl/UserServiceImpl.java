@@ -6,6 +6,7 @@ import com.xdpsx.music.dto.request.UserProfileRequest;
 import com.xdpsx.music.dto.request.params.UserParams;
 import com.xdpsx.music.dto.response.UserProfileResponse;
 import com.xdpsx.music.dto.response.UserResponse;
+import com.xdpsx.music.mapper.PageMapper;
 import com.xdpsx.music.model.entity.User;
 import com.xdpsx.music.exception.BadRequestException;
 import com.xdpsx.music.exception.ResourceNotFoundException;
@@ -22,15 +23,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import static com.xdpsx.music.constant.FileConstants.USERS_IMG_FOLDER;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
+    private final PageMapper pageMapper;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final FileService fileService;
@@ -73,12 +72,23 @@ public class UserServiceImpl implements UserService {
         return userMapper.fromEntityToProfileResponse(loggedUser);
     }
 
+    private User getUserById(Long id){
+        User user = fetchUserById(id);
+        if (user == null){
+            throw new ResourceNotFoundException(String.format("Not found user with ID=%s", id));
+        }
+        return user;
+    }
+
+    private User fetchUserById(Long userId){
+        return userRepository.findById(userId)
+                .orElse(null);
+    }
+
     @Transactional
     @Override
     public void lockUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(String.format("User with id=%s not found", userId)));
+        User user = getUserById(userId);
         if (!user.isAccountLocked()){
             user.setAccountLocked(true);
             userRepository.save(user);
@@ -87,9 +97,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void unlockUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(String.format("User with id=%s not found", userId)));
+        User user = getUserById(userId);
         if (user.isAccountLocked()){
             user.setAccountLocked(false);
             userRepository.save(user);
@@ -98,9 +106,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUserById(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(String.format("User with id=%s not found", userId)));
+        User user = getUserById(userId);
         userRepository.delete(user);
         if (user.getAvatar() != null){
             fileService.deleteFileByUrl(user.getAvatar());
@@ -113,16 +119,7 @@ public class UserServiceImpl implements UserService {
         Page<User> userPage = userRepository.findWithFilters(
                 pageable, params.getSearch(), params.getSort(), params.getAccountLocked(), params.getEnabled()
         );
-        List<UserResponse> responses = userPage.getContent().stream()
-                .map(userMapper::fromEntityToResponse)
-                .collect(Collectors.toList());
-        return PageResponse.<UserResponse>builder()
-                .items(responses)
-                .pageNum(userPage.getNumber() + 1)
-                .pageSize(userPage.getSize())
-                .totalItems(userPage.getTotalElements())
-                .totalPages(userPage.getTotalPages())
-                .build();
+        return pageMapper.toUserPageResponse(userPage);
     }
 
 

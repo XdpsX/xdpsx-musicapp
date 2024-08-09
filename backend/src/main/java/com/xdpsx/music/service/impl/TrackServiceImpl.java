@@ -31,9 +31,6 @@ public class TrackServiceImpl implements TrackService {
     private final GenreService genreService;
     private final ArtistService artistService;
     private final TrackRepository trackRepository;
-    private final AlbumRepository albumRepository;
-    private final GenreRepository genreRepository;
-    private final ArtistRepository artistRepository;
     private final PlaylistRepository playlistRepository;
     private final UserContext userContext;
 

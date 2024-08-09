@@ -3,16 +3,14 @@ package com.xdpsx.music.service.impl;
 import com.xdpsx.music.dto.common.PageResponse;
 import com.xdpsx.music.dto.request.PlaylistRequest;
 import com.xdpsx.music.dto.request.params.PlaylistParam;
-import com.xdpsx.music.dto.response.AlbumResponse;
 import com.xdpsx.music.dto.response.PlaylistResponse;
 import com.xdpsx.music.exception.DuplicateResourceException;
 import com.xdpsx.music.exception.ResourceNotFoundException;
+import com.xdpsx.music.mapper.PageMapper;
 import com.xdpsx.music.mapper.PlaylistMapper;
-import com.xdpsx.music.model.entity.Album;
 import com.xdpsx.music.model.entity.Playlist;
 import com.xdpsx.music.model.entity.User;
 import com.xdpsx.music.repository.PlaylistRepository;
-import com.xdpsx.music.repository.PlaylistTrackRepository;
 import com.xdpsx.music.service.PlaylistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,15 +18,26 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Service
 @RequiredArgsConstructor
 public class PlaylistServiceImpl implements PlaylistService {
     private final PlaylistMapper playlistMapper;
+    private final PageMapper pageMapper;
     private final PlaylistRepository playlistRepository;
-    private final PlaylistTrackRepository playlistTrackRepository;
+
+    @Override
+    public Playlist getPlaylistByIdAndOwnerId(Long playlistId, Long ownerId) {
+        Playlist playlist = fetchPlaylistByIdAndOwnerId(playlistId, ownerId);
+        if (playlist == null){
+            throw new ResourceNotFoundException(String.format("Playlist with id=%s not found", playlistId));
+        }
+        return playlist;
+    }
+
+    private Playlist fetchPlaylistByIdAndOwnerId(Long playlistId, Long ownerId) {
+        return playlistRepository.findByIdAndOwnerId(playlistId, ownerId)
+                .orElse(null);
+    }
 
     @Override
     public PlaylistResponse createPlaylist(PlaylistRequest request, User loggedUser) {
@@ -46,10 +55,7 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     public void deletePlaylist(Long playlistId, User loggedUser) {
-        Playlist playlist = playlistRepository.findByIdAndOwnerId(playlistId, loggedUser.getId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("Playlist with id=%s not found", playlistId)
-                ));
+        Playlist playlist = getPlaylistByIdAndOwnerId(playlistId, loggedUser.getId());
         playlistRepository.delete(playlist);
     }
 
@@ -59,22 +65,7 @@ public class PlaylistServiceImpl implements PlaylistService {
         Page<Playlist> playlistPage = playlistRepository.findAllWithFilters(
                 pageable, params.getSearch(), params.getSort(), loggedUser.getId()
         );
-        List<PlaylistResponse> responses = playlistPage.getContent().stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-        return PageResponse.<PlaylistResponse>builder()
-                .items(responses)
-                .pageNum(playlistPage.getNumber() + 1)
-                .pageSize(playlistPage.getSize())
-                .totalItems(playlistPage.getTotalElements())
-                .totalPages(playlistPage.getTotalPages())
-                .build();
+        return pageMapper.toPlaylistPageResponse(playlistPage);
     }
 
-    private PlaylistResponse mapToResponse(Playlist playlist){
-        PlaylistResponse response = playlistMapper.fromEntityToResponse(playlist);
-        int totalTracks = playlistTrackRepository.countByPlaylistId(playlist.getId());
-        response.setTotalTracks(totalTracks);
-        return response;
-    }
 }
