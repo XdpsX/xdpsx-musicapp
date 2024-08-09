@@ -70,6 +70,9 @@ public class TrackCriteriaRepositoryImpl implements TrackCriteriaRepository {
             Join<Track, ?> artists = track.join("artists");
             predicates.add(cb.equal(artists.get("id"), artistId));
         }
+        if (genreId != null || artistId != null){
+            predicates.add(cb.isNull(track.get("album")));
+        }
         return predicates.toArray(new Predicate[0]);
     }
 
