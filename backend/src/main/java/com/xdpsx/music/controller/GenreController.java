@@ -7,6 +7,8 @@ import com.xdpsx.music.dto.request.params.TrackParams;
 import com.xdpsx.music.dto.response.AlbumResponse;
 import com.xdpsx.music.dto.response.GenreResponse;
 import com.xdpsx.music.dto.response.TrackResponse;
+import com.xdpsx.music.mapper.GenreMapper;
+import com.xdpsx.music.model.entity.Genre;
 import com.xdpsx.music.service.AlbumService;
 import com.xdpsx.music.service.GenreService;
 import com.xdpsx.music.service.TrackService;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/genres")
@@ -26,20 +29,25 @@ public class GenreController {
     private final GenreService genreService;
     private final AlbumService albumService;
     private final TrackService trackService;
+    private final GenreMapper genreMapper;
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<GenreResponse> createGenre(
             @Valid @ModelAttribute GenreRequest request,
             @RequestParam MultipartFile image
             ){
-        GenreResponse response = genreService.createGenre(request, image);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        Genre createdGenre = genreService.createGenre(request, image);
+        return new ResponseEntity<>(genreMapper.fromEntityToResponse(createdGenre), HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<List<GenreResponse>> fetchAllGenres(){
-        List<GenreResponse> responses = genreService.getAllGenres();
-        return ResponseEntity.ok(responses);
+        List<Genre> genres = genreService.getAllGenres();
+        return ResponseEntity.ok(
+                genres.stream()
+                .map(genreMapper::fromEntityToResponse)
+                .collect(Collectors.toList())
+        );
     }
 
     @DeleteMapping("/{genreId}")
