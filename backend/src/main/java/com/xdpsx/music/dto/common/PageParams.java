@@ -2,11 +2,13 @@ package com.xdpsx.music.dto.common;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import static com.xdpsx.music.constant.PageConstants.*;
 
-@Data
+@Setter
+@Getter
 public class PageParams {
     @Min(value = 1, message = "Page number must be at least 1")
     private Integer pageNum = 1;

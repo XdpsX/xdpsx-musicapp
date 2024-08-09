@@ -6,6 +6,8 @@ import com.xdpsx.music.dto.request.params.PlaylistParam;
 import com.xdpsx.music.dto.request.params.TrackParams;
 import com.xdpsx.music.dto.response.PlaylistResponse;
 import com.xdpsx.music.dto.response.TrackResponse;
+import com.xdpsx.music.mapper.PageMapper;
+import com.xdpsx.music.model.entity.Track;
 import com.xdpsx.music.model.entity.User;
 import com.xdpsx.music.security.UserContext;
 import com.xdpsx.music.service.PlaylistService;
@@ -13,6 +15,7 @@ import com.xdpsx.music.service.PlaylistTrackService;
 import com.xdpsx.music.service.TrackService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +28,7 @@ public class PlaylistController {
     private final PlaylistService playlistService;
     private final PlaylistTrackService playlistTrackService;
     private final TrackService trackService;
+    private final PageMapper pageMapper;
 
     @PostMapping
     public ResponseEntity<PlaylistResponse> createPlaylist(
@@ -70,7 +74,7 @@ public class PlaylistController {
             @PathVariable Long playlistId,
             @Valid TrackParams params
             ){
-        PageResponse<TrackResponse> responses = trackService.getTracksByPlaylist(playlistId, params);
-        return ResponseEntity.ok(responses);
+        Page<Track> trackPage = trackService.getTracksByPlaylist(playlistId, params);
+        return ResponseEntity.ok(pageMapper.toTrackPageResponse(trackPage));
     }
 }

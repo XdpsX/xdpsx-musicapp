@@ -7,11 +7,11 @@ import com.xdpsx.music.dto.request.params.TrackParams;
 import com.xdpsx.music.dto.response.AlbumResponse;
 import com.xdpsx.music.dto.response.GenreResponse;
 import com.xdpsx.music.dto.response.TrackResponse;
-import com.xdpsx.music.mapper.AlbumMapper;
 import com.xdpsx.music.mapper.GenreMapper;
 import com.xdpsx.music.mapper.PageMapper;
 import com.xdpsx.music.model.entity.Album;
 import com.xdpsx.music.model.entity.Genre;
+import com.xdpsx.music.model.entity.Track;
 import com.xdpsx.music.service.AlbumService;
 import com.xdpsx.music.service.GenreService;
 import com.xdpsx.music.service.TrackService;
@@ -34,7 +34,6 @@ public class GenreController {
     private final AlbumService albumService;
     private final TrackService trackService;
     private final GenreMapper genreMapper;
-    private final AlbumMapper albumMapper;
     private final PageMapper pageMapper;
 
     @PostMapping
@@ -68,7 +67,7 @@ public class GenreController {
             @Valid AlbumParams params
     ){
         Page<Album> albumPage = albumService.getAlbumsByGenreId(genreId, params);
-        return ResponseEntity.ok(pageMapper.toPageResponse(albumPage, albumMapper::fromEntityToResponse));
+        return ResponseEntity.ok(pageMapper.toAlbumPageResponse(albumPage));
     }
 
     @GetMapping("/{genreId}/tracks")
@@ -76,7 +75,7 @@ public class GenreController {
             @PathVariable Integer genreId,
             @Valid TrackParams params
     ){
-        PageResponse<TrackResponse> responses = trackService.getTracksByGenreId(genreId, params);
-        return ResponseEntity.ok(responses);
+        Page<Track> trackPage = trackService.getTracksByGenreId(genreId, params);
+        return ResponseEntity.ok(pageMapper.toTrackPageResponse(trackPage));
     }
 }

@@ -4,12 +4,16 @@ import com.xdpsx.music.dto.common.PageResponse;
 import com.xdpsx.music.dto.request.TrackRequest;
 import com.xdpsx.music.dto.request.params.TrackParams;
 import com.xdpsx.music.dto.response.TrackResponse;
+import com.xdpsx.music.mapper.PageMapper;
+import com.xdpsx.music.mapper.TrackMapper;
+import com.xdpsx.music.model.entity.Track;
 import com.xdpsx.music.model.entity.User;
 import com.xdpsx.music.security.UserContext;
 import com.xdpsx.music.service.LikeService;
 import com.xdpsx.music.service.TrackService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +29,22 @@ public class TrackController {
     private final UserContext userContext;
     private final TrackService trackService;
     private final LikeService likeService;
+    private final TrackMapper trackMapper;
+    private final PageMapper pageMapper;
+
+    @GetMapping
+    public ResponseEntity<PageResponse<TrackResponse>> getAllTracks(
+            @Valid TrackParams params
+    ) {
+        Page<Track> trackPage = trackService.getAllTracks(params);
+        return ResponseEntity.ok(pageMapper.toPageResponse(trackPage, trackMapper::fromEntityToResponse));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<TrackResponse> getTrackById(@PathVariable Long id) {
+        Track track = trackService.getTrackById(id);
+        return ResponseEntity.ok(trackMapper.fromEntityToResponse(track));
+    }
 
     @PostMapping
     public ResponseEntity<TrackResponse> createTrack(
@@ -32,8 +52,8 @@ public class TrackController {
             @RequestParam(required = false) MultipartFile image,
             @RequestParam MultipartFile file
     ) {
-        TrackResponse response = trackService.createTrack(request, image, file);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        Track createdTrack = trackService.createTrack(request, image, file);
+        return new ResponseEntity<>(trackMapper.fromEntityToResponse(createdTrack), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
@@ -43,22 +63,8 @@ public class TrackController {
             @RequestParam(required = false) MultipartFile image,
             @RequestParam(required = false) MultipartFile file
     ) {
-        TrackResponse response = trackService.updateTrack(id, request, image, file);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<TrackResponse> getTrackById(@PathVariable Long id) {
-        TrackResponse response = trackService.getTrackById(id);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping
-    public ResponseEntity<PageResponse<TrackResponse>> getAllTracks(
-            @Valid TrackParams params
-    ) {
-        PageResponse<TrackResponse> responses = trackService.getAllTracks(params);
-        return ResponseEntity.ok(responses);
+        Track updatedTrack = trackService.updateTrack(id, request, image, file);
+        return ResponseEntity.ok(trackMapper.fromEntityToResponse(updatedTrack));
     }
 
     @DeleteMapping("/{id}")

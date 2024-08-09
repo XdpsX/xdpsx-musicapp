@@ -1,24 +1,24 @@
 package com.xdpsx.music.service;
 
-import com.xdpsx.music.dto.common.PageResponse;
 import com.xdpsx.music.dto.request.TrackRequest;
 import com.xdpsx.music.dto.request.params.TrackParams;
-import com.xdpsx.music.dto.response.TrackResponse;
+import com.xdpsx.music.model.entity.Track;
 import com.xdpsx.music.model.entity.User;
+import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface TrackService {
-    TrackResponse createTrack(TrackRequest request, MultipartFile image, MultipartFile file);
-    TrackResponse updateTrack(Long id, TrackRequest request, MultipartFile newImage, MultipartFile newFile);
-    TrackResponse getTrackById(Long id);
-    PageResponse<TrackResponse> getAllTracks(TrackParams params);
+    Page<Track> getAllTracks(TrackParams params);
+    Track getTrackById(Long id);
+    Track createTrack(TrackRequest request, MultipartFile image, MultipartFile file);
+    Track updateTrack(Long id, TrackRequest request, MultipartFile newImage, MultipartFile newFile);
     void deleteTrack(Long id);
 
-    PageResponse<TrackResponse> getTracksByGenreId(Integer genreId, TrackParams params);
-    PageResponse<TrackResponse> getTracksByArtistId(Long artistId, TrackParams params);
-    PageResponse<TrackResponse> getTracksByAlbumId(Long albumId, TrackParams params);
-    PageResponse<TrackResponse> getLikedTracks(TrackParams params, User loggedUser);
-    PageResponse<TrackResponse> getTracksByPlaylist(Long playlistId, TrackParams params);
+    Page<Track> getTracksByGenreId(Integer genreId, TrackParams params);
+    Page<Track> getTracksByArtistId(Long artistId, TrackParams params);
+    Page<Track> getTracksByAlbumId(Long albumId, TrackParams params);
+    Page<Track> getLikedTracks(TrackParams params, User loggedUser);
+    Page<Track> getTracksByPlaylist(Long playlistId, TrackParams params);
 
     void incrementListeningCount(Long trackId, User loggedUser);
 }

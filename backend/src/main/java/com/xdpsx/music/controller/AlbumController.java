@@ -9,6 +9,7 @@ import com.xdpsx.music.dto.response.TrackResponse;
 import com.xdpsx.music.mapper.AlbumMapper;
 import com.xdpsx.music.mapper.PageMapper;
 import com.xdpsx.music.model.entity.Album;
+import com.xdpsx.music.model.entity.Track;
 import com.xdpsx.music.service.AlbumService;
 import com.xdpsx.music.service.TrackService;
 import jakarta.validation.Valid;
@@ -33,7 +34,7 @@ public class AlbumController {
             @Valid AlbumParams params
     ) {
         Page<Album> albumPage = albumService.getAllAlbums(params);
-        return ResponseEntity.ok(pageMapper.toPageResponse(albumPage, albumMapper::fromEntityToResponse));
+        return ResponseEntity.ok(pageMapper.toAlbumPageResponse(albumPage));
     }
 
     @GetMapping("/{id}")
@@ -73,7 +74,7 @@ public class AlbumController {
             @PathVariable Long albumId,
             @Valid TrackParams params
     ) {
-        PageResponse<TrackResponse> response = trackService.getTracksByAlbumId(albumId, params);
-        return ResponseEntity.ok(response);
+        Page<Track> trackPage = trackService.getTracksByAlbumId(albumId, params);
+        return ResponseEntity.ok(pageMapper.toTrackPageResponse(trackPage));
     }
 }

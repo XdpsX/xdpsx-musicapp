@@ -8,11 +8,11 @@ import com.xdpsx.music.dto.response.AlbumResponse;
 import com.xdpsx.music.dto.response.ArtistResponse;
 import com.xdpsx.music.dto.common.PageResponse;
 import com.xdpsx.music.dto.response.TrackResponse;
-import com.xdpsx.music.mapper.AlbumMapper;
 import com.xdpsx.music.mapper.ArtistMapper;
 import com.xdpsx.music.mapper.PageMapper;
 import com.xdpsx.music.model.entity.Album;
 import com.xdpsx.music.model.entity.Artist;
+import com.xdpsx.music.model.entity.Track;
 import com.xdpsx.music.service.AlbumService;
 import com.xdpsx.music.service.ArtistService;
 import com.xdpsx.music.service.TrackService;
@@ -32,7 +32,6 @@ public class ArtistController {
     private final AlbumService albumService;
     private final TrackService trackService;
     private final ArtistMapper artistMapper;
-    private final AlbumMapper albumMapper;
     private final PageMapper pageMapper;
 
     @GetMapping
@@ -40,7 +39,7 @@ public class ArtistController {
             @Valid ArtistParams params
     ) {
         Page<Artist> artistPage = artistService.getAllArtists(params);
-        return ResponseEntity.ok(pageMapper.toPageResponse(artistPage, artistMapper::fromEntityToResponse));
+        return ResponseEntity.ok(pageMapper.toArtistPageResponse(artistPage));
     }
 
     @GetMapping("/{id}")
@@ -79,7 +78,7 @@ public class ArtistController {
             @Valid AlbumParams params
     ){
         Page<Album> albumPage = albumService.getAlbumsByArtistId(artistId, params);
-        return ResponseEntity.ok(pageMapper.toPageResponse(albumPage, albumMapper::fromEntityToResponse));
+        return ResponseEntity.ok(pageMapper.toAlbumPageResponse(albumPage));
     }
 
     @GetMapping("/{artistId}/tracks")
@@ -87,7 +86,7 @@ public class ArtistController {
             @PathVariable Long artistId,
             @Valid TrackParams params
     ){
-        PageResponse<TrackResponse> responses = trackService.getTracksByArtistId(artistId, params);
-        return ResponseEntity.ok(responses);
+        Page<Track> trackPage = trackService.getTracksByArtistId(artistId, params);
+        return ResponseEntity.ok(pageMapper.toTrackPageResponse(trackPage));
     }
 }

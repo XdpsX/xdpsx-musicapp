@@ -8,12 +8,15 @@ import com.xdpsx.music.dto.request.params.UserParams;
 import com.xdpsx.music.dto.response.TrackResponse;
 import com.xdpsx.music.dto.response.UserProfileResponse;
 import com.xdpsx.music.dto.response.UserResponse;
+import com.xdpsx.music.mapper.PageMapper;
+import com.xdpsx.music.model.entity.Track;
 import com.xdpsx.music.model.entity.User;
 import com.xdpsx.music.security.UserContext;
 import com.xdpsx.music.service.TrackService;
 import com.xdpsx.music.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,6 +29,7 @@ public class UserController {
     private final UserContext userContext;
     private final UserService userService;
     private final TrackService trackService;
+    private final PageMapper pageMapper;
 
     @PatchMapping("/change-password")
     public ResponseEntity<Void> changePassword(
@@ -83,7 +87,7 @@ public class UserController {
             @Valid TrackParams params
     ){
         User loggedUser = userContext.getLoggedUser();
-        PageResponse<TrackResponse> responses = trackService.getLikedTracks(params, loggedUser);
-        return ResponseEntity.ok(responses);
+        Page<Track> trackPage = trackService.getLikedTracks(params, loggedUser);
+        return ResponseEntity.ok(pageMapper.toTrackPageResponse(trackPage));
     }
 }
