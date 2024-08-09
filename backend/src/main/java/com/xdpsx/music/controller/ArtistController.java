@@ -8,15 +8,21 @@ import com.xdpsx.music.dto.response.AlbumResponse;
 import com.xdpsx.music.dto.response.ArtistResponse;
 import com.xdpsx.music.dto.common.PageResponse;
 import com.xdpsx.music.dto.response.TrackResponse;
+import com.xdpsx.music.mapper.ArtistMapper;
+import com.xdpsx.music.model.entity.Artist;
 import com.xdpsx.music.service.AlbumService;
 import com.xdpsx.music.service.ArtistService;
 import com.xdpsx.music.service.TrackService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/artists")
@@ -25,14 +31,39 @@ public class ArtistController {
     private final ArtistService artistService;
     private final AlbumService albumService;
     private final TrackService trackService;
+    private final ArtistMapper artistMapper;
+
+    @GetMapping
+    public ResponseEntity<PageResponse<ArtistResponse>> getAllArtists(
+            @Valid ArtistParams params
+    ) {
+        Page<Artist> artistPage = artistService.getAllArtists(params);
+        List<ArtistResponse> responses = artistPage.getContent().stream()
+                        .map(artistMapper::fromEntityToResponse)
+                        .collect(Collectors.toList());
+        PageResponse<ArtistResponse> result = PageResponse.<ArtistResponse>builder()
+                .items(responses)
+                .pageNum(artistPage.getNumber() + 1)
+                .pageSize(artistPage.getSize())
+                .totalItems(artistPage.getTotalElements())
+                .totalPages(artistPage.getTotalPages())
+                .build();
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ArtistResponse> getArtistById(@PathVariable Long id) {
+        Artist artist = artistService.getArtistById(id);
+        return ResponseEntity.ok(artistMapper.fromEntityToResponse(artist));
+    }
 
     @PostMapping
     public ResponseEntity<ArtistResponse> createArtist(
             @Valid @ModelAttribute ArtistRequest request,
             @RequestParam(required = false) MultipartFile image
     ) {
-        ArtistResponse response = artistService.createArtist(request, image);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        Artist createdArtist = artistService.createArtist(request, image);
+        return new ResponseEntity<>(artistMapper.fromEntityToResponse(createdArtist), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
@@ -40,28 +71,14 @@ public class ArtistController {
             @PathVariable Long id,
             @Valid @ModelAttribute ArtistRequest request,
             @RequestParam(required = false) MultipartFile image) {
-        ArtistResponse response = artistService.updateArtist(id, request, image);
-        return ResponseEntity.ok(response);
+        Artist updatedArtist = artistService.updateArtist(id, request, image);
+        return ResponseEntity.ok(artistMapper.fromEntityToResponse(updatedArtist));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteArtist(@PathVariable Long id) {
         artistService.deleteArtist(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ArtistResponse> getArtistById(@PathVariable Long id) {
-        ArtistResponse response = artistService.getArtistById(id);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping
-    public ResponseEntity<PageResponse<ArtistResponse>> getAllArtists(
-            @Valid ArtistParams params
-    ) {
-        PageResponse<ArtistResponse> responses = artistService.getAllArtists(params);
-        return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/{artistId}/albums")
