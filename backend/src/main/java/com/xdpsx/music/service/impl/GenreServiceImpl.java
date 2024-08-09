@@ -24,6 +24,24 @@ public class GenreServiceImpl implements GenreService {
     private final GenreRepository genreRepository;
 
     @Override
+    public List<Genre> getAllGenres() {
+        return genreRepository.findAll();
+    }
+
+    @Override
+    public Genre getGenreById(Integer id) {
+        Genre genre = fetchGenreById(id);
+        if (genre == null){
+            throw new ResourceNotFoundException(String.format("Not found genre with ID=%s", id));
+        }
+        return genre;
+    }
+
+    private Genre fetchGenreById(Integer genreId){
+        return genreRepository.findById(genreId)
+                .orElse(null);
+    }
+    @Override
     public Genre createGenre(GenreRequest request, MultipartFile image) {
             if (genreRepository.existsByName(request.getName())){
                 throw new BadRequestException(String.format("Genre with name=%s has already existed", request.getName()));
@@ -32,11 +50,6 @@ public class GenreServiceImpl implements GenreService {
             String imageUrl = fileService.uploadFile(image, GENRES_IMG_FOLDER);
             genre.setImage(imageUrl);
             return genreRepository.save(genre);
-    }
-
-    @Override
-    public List<Genre> getAllGenres() {
-        return genreRepository.findAll();
     }
 
     @Override

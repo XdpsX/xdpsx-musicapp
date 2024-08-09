@@ -34,7 +34,16 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     public Artist getArtistById(Long id) {
-        return artistRepository.findById(id)
+        Artist artist = fetchArtistById(id);
+        if (artist == null){
+            throw new ResourceNotFoundException(String.format("Not found artist with ID=%s", id));
+        }
+        return artist;
+    }
+
+    // TODO cache later
+    private Artist fetchArtistById(Long artistId){
+        return artistRepository.findById(artistId)
                 .orElse(null);
     }
 
@@ -52,9 +61,6 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     public Artist updateArtist(Long id, ArtistRequest request, MultipartFile image) {
         Artist artist = getArtistById(id);
-        if (artist == null){
-            throw new ResourceNotFoundException(String.format("Not found artist with ID=%s", id));
-        }
         artist.setName(request.getName());
         artist.setGender(request.getGender());
         artist.setDescription(request.getDescription());
@@ -77,10 +83,8 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     public void deleteArtist(Long id) {
         Artist artist = getArtistById(id);
-        if (artist == null){
-            throw new ResourceNotFoundException(String.format("Not found artist with ID=%s", id));
-        }
         artistRepository.delete(artist);
         fileService.deleteFileByUrl(artist.getAvatar());
     }
+
 }

@@ -1,18 +1,18 @@
 package com.xdpsx.music.service;
 
-import com.xdpsx.music.dto.common.PageResponse;
 import com.xdpsx.music.dto.request.params.AlbumParams;
 import com.xdpsx.music.dto.request.AlbumRequest;
-import com.xdpsx.music.dto.response.AlbumResponse;
+import com.xdpsx.music.model.entity.Album;
+import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface AlbumService {
-    AlbumResponse createAlbum(AlbumRequest request, MultipartFile image);
-    AlbumResponse updateAlbum(Long id, AlbumRequest request, MultipartFile image);
-    AlbumResponse getAlbumById(Long id);
-    PageResponse<AlbumResponse> getAllAlbums(AlbumParams params);
+    Page<Album> getAllAlbums(AlbumParams params);
+    Album getAlbumById(Long id);
+    Album createAlbum(AlbumRequest request, MultipartFile image);
+    Album updateAlbum(Long id, AlbumRequest request, MultipartFile image);
     void deleteAlbum(Long id);
 
-    PageResponse<AlbumResponse> getAlbumsByGenreId(Integer genreId, AlbumParams params);
-    PageResponse<AlbumResponse> getAlbumsByArtistId(Long artistId, AlbumParams params);
+    Page<Album> getAlbumsByGenreId(Integer genreId, AlbumParams params);
+    Page<Album> getAlbumsByArtistId(Long artistId, AlbumParams params);
 }

@@ -7,13 +7,17 @@ import com.xdpsx.music.dto.request.params.TrackParams;
 import com.xdpsx.music.dto.response.AlbumResponse;
 import com.xdpsx.music.dto.response.GenreResponse;
 import com.xdpsx.music.dto.response.TrackResponse;
+import com.xdpsx.music.mapper.AlbumMapper;
 import com.xdpsx.music.mapper.GenreMapper;
+import com.xdpsx.music.mapper.PageMapper;
+import com.xdpsx.music.model.entity.Album;
 import com.xdpsx.music.model.entity.Genre;
 import com.xdpsx.music.service.AlbumService;
 import com.xdpsx.music.service.GenreService;
 import com.xdpsx.music.service.TrackService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +34,8 @@ public class GenreController {
     private final AlbumService albumService;
     private final TrackService trackService;
     private final GenreMapper genreMapper;
+    private final AlbumMapper albumMapper;
+    private final PageMapper pageMapper;
 
     @PostMapping
     public ResponseEntity<GenreResponse> createGenre(
@@ -61,8 +67,8 @@ public class GenreController {
             @PathVariable Integer genreId,
             @Valid AlbumParams params
     ){
-        PageResponse<AlbumResponse> responses = albumService.getAlbumsByGenreId(genreId, params);
-        return ResponseEntity.ok(responses);
+        Page<Album> albumPage = albumService.getAlbumsByGenreId(genreId, params);
+        return ResponseEntity.ok(pageMapper.toPageResponse(albumPage, albumMapper::fromEntityToResponse));
     }
 
     @GetMapping("/{genreId}/tracks")

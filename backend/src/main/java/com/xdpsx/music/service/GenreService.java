@@ -7,7 +7,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface GenreService {
-    Genre createGenre(GenreRequest request, MultipartFile image);
     List<Genre> getAllGenres();
+    Genre getGenreById(Integer id);
+    Genre createGenre(GenreRequest request, MultipartFile image);
     void deleteGenre(Integer genreId);
 }
