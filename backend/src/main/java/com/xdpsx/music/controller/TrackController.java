@@ -77,7 +77,7 @@ public class TrackController {
     public ResponseEntity<?> likeTrack(@PathVariable Long trackId){
         User loggedUser = userContext.getLoggedUser();
         likeService.likeTrack(trackId, loggedUser);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("/{trackId}/unlikes")
